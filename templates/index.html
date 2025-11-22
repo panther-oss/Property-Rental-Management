@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Rental Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🏠 Property Rental Management</h1>
+            <div class="flex items-center space-x-4">
+                <div id="dashboardStats" class="text-sm"></div>
+                <a href="/reports" class="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100 font-medium">
+                    📊 Reports
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex space-x-4 overflow-x-auto">
+                <button onclick="switchTab('properties')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-properties">Properties</button>
+                <button onclick="switchTab('tenants')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-tenants">Tenants</button>
+                <button onclick="switchTab('owners')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-owners">Owners</button>
+                <button onclick="switchTab('leases')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-leases">Leases</button>
+                <button onclick="switchTab('payments')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-payments">Payments</button>
+                <button onclick="switchTab('maintenance')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-maintenance">Maintenance</button>
+                <button onclick="switchTab('complaints')" class="tab px-4 py-3 font-medium hover:bg-gray-100" id="tab-complaints">Complaints</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4">
+        <div id="alert" class="hidden mb-4 p-4 rounded"></div>
+        
+        <!-- Properties Section -->
+        <div id="section-properties" class="section">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Properties</h2>
+                    <button onclick="openModal('property')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Property</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="propertiesTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Address</th>
+                                <th class="p-3 text-left">Type</th>
+                                <th class="p-3 text-left">Size (sqft)</th>
+                                <th class="p-3 text-left">Cost</th>
+                                <th class="p-3 text-left">Status</th>
+                                <th class="p-3 text-left">Owner</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="propertiesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tenants Section -->
+        <div id="section-tenants" class="section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Tenants</h2>
+                    <button onclick="openModal('tenant')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Tenant</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="tenantsTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Name</th>
+                                <th class="p-3 text-left">Phone</th>
+                                <th class="p-3 text-left">Email</th>
+                                <th class="p-3 text-left">Income</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tenantsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owners Section -->
+        <div id="section-owners" class="section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Owners</h2>
+                    <button onclick="openModal('owner')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Owner</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="ownersTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Name</th>
+                                <th class="p-3 text-left">Phone</th>
+                                <th class="p-3 text-left">Email</th>
+                                <th class="p-3 text-left">Bank Account</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ownersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leases Section -->
+        <div id="section-leases" class="section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Leases</h2>
+                    <button onclick="openModal('lease')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Lease</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="leasesTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Property</th>
+                                <th class="p-3 text-left">Tenant</th>
+                                <th class="p-3 text-left">Start Date</th>
+                                <th class="p-3 text-left">End Date</th>
+                                <th class="p-3 text-left">Monthly Rent</th>
+                                <th class="p-3 text-left">Security Deposit</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leasesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Section -->
+        <div id="section-payments" class="section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Payments</h2>
+                    <button onclick="openModal('payment')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Payment</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="paymentsTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Date</th>
+                                <th class="p-3 text-left">Tenant</th>
+                                <th class="p-3 text-left">Amount</th>
+                                <th class="p-3 text-left">Mode</th>
+                                <th class="p-3 text-left">Status</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Section -->
+        <div id="section-maintenance" class="section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Maintenance</h2>
+                    <button onclick="openModal('maintenance')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Maintenance</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="maintenanceTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Property</th>
+                                <th class="p-3 text-left">Date</th>
+                                <th class="p-3 text-left">Type</th>
+                                <th class="p-3 text-left">Cost</th>
+                                <th class="p-3 text-left">Status</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenanceBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complaints Section -->
+        <div id="section-complaints" class="section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Complaints</h2>
+                    <button onclick="openModal('complaint')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Complaint</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="complaintsTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">ID</th>
+                                <th class="p-3 text-left">Date</th>
+                                <th class="p-3 text-left">Tenant</th>
+                                <th class="p-3 text-left">Property</th>
+                                <th class="p-3 text-left">Status</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaintsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-xl font-bold"></h3>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+                <form id="modalForm" class="space-y-4"></form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let currentTab = 'properties';
+        let editingId = null;
+        let allData = {
+            properties: [],
+            tenants: [],
+            owners: [],
+            leases: [],
+            payments: [],
+            maintenance: [],
+            complaints: []
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+            switchTab('properties');
+        });
+
+        async function loadAllData() {
+            await Promise.all([
+                fetchData('properties'),
+                fetchData('tenants'),
+                fetchData('owners'),
+                fetchData('leases'),
+                fetchData('payments'),
+                fetchData('maintenance'),
+                fetchData('complaints'),
+                fetchDashboard()
+            ]);
+        }
+
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}/${endpoint}`);
+                const data = await response.json();
+                allData[endpoint] = data;
+                renderTable(endpoint, data);
+            } catch (error) {
+                showAlert('Error loading ' + endpoint, 'error');
+            }
+        }
+
+        async function fetchDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard`);
+                const stats = await response.json();
+                document.getElementById('dashboardStats').innerHTML = `
+                    <div class="flex space-x-4">
+                        <span>Properties: ${stats.total_properties} (${stats.rented_properties} Rented)</span>
+                        <span>Tenants: ${stats.total_tenants}</span>
+                        <span>Revenue: $${stats.total_revenue.toFixed(2)}</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('tab-active'));
+            
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+        }
+
+        function renderTable(type, data) {
+            const tbody = document.getElementById(`${type}Body`);
+            if (!tbody) return;
+
+            tbody.innerHTML = data.map(item => {
+                switch(type) {
+                    case 'properties':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Property_ID}</td>
+                            <td class="p-3">${item.Address}</td>
+                            <td class="p-3">${item.Property_Type}</td>
+                            <td class="p-3">${item.Size_Sqft}</td>
+                            <td class="p-3">$${item.Property_Cost}</td>
+                            <td class="p-3"><span class="px-2 py-1 rounded text-xs ${item.Booking_Status === 'Rented' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${item.Booking_Status}</span></td>
+                            <td class="p-3">${item.Owner_Name || 'N/A'}</td>
+                            <td class="p-3">
+                                <button onclick="editItem('property', ${item.Property_ID})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                                <button onclick="deleteItem('properties', ${item.Property_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                    case 'tenants':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Tenant_ID}</td>
+                            <td class="p-3">${item.Name}</td>
+                            <td class="p-3">${item.Phone}</td>
+                            <td class="p-3">${item.Email}</td>
+                            <td class="p-3">$${item.Income}</td>
+                            <td class="p-3">
+                                <button onclick="editItem('tenant', ${item.Tenant_ID})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                                <button onclick="deleteItem('tenants', ${item.Tenant_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                    case 'owners':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Owner_ID}</td>
+                            <td class="p-3">${item.Name}</td>
+                            <td class="p-3">${item.Phone}</td>
+                            <td class="p-3">${item.Email}</td>
+                            <td class="p-3">${item.Bank_Account}</td>
+                            <td class="p-3">
+                                <button onclick="editItem('owner', ${item.Owner_ID})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                                <button onclick="deleteItem('owners', ${item.Owner_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                    case 'leases':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Lease_ID}</td>
+                            <td class="p-3">${item.Property_Address || 'N/A'}</td>
+                            <td class="p-3">${item.Tenant_Name || 'N/A'}</td>
+                            <td class="p-3">${item.Start_Date}</td>
+                            <td class="p-3">${item.End_Date}</td>
+                            <td class="p-3">$${item.Monthly_Rent}</td>
+                            <td class="p-3">$${item.Security_Deposit}</td>
+                            <td class="p-3">
+                                <button onclick="editItem('lease', ${item.Lease_ID})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                                <button onclick="deleteItem('leases', ${item.Lease_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                    case 'payments':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Payment_ID}</td>
+                            <td class="p-3">${item.Payment_Date}</td>
+                            <td class="p-3">${item.Tenant_Name || 'N/A'}</td>
+                            <td class="p-3">$${item.Amount}</td>
+                            <td class="p-3">${item.Mode_of_Payment}</td>
+                            <td class="p-3"><span class="px-2 py-1 rounded text-xs ${item.Status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${item.Status}</span></td>
+                            <td class="p-3">
+                                <button onclick="deleteItem('payments', ${item.Payment_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                    case 'maintenance':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Maintenance_ID}</td>
+                            <td class="p-3">${item.Property_Address || 'N/A'}</td>
+                            <td class="p-3">${item.Maintenance_Date}</td>
+                            <td class="p-3">${item.Maintenance_Type}</td>
+                            <td class="p-3">$${item.Cost}</td>
+                            <td class="p-3"><span class="px-2 py-1 rounded text-xs ${item.Status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${item.Status}</span></td>
+                            <td class="p-3">
+                                <button onclick="editItem('maintenance', ${item.Maintenance_ID})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                                <button onclick="deleteItem('maintenance', ${item.Maintenance_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                    case 'complaints':
+                        return `<tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">${item.Complaint_ID}</td>
+                            <td class="p-3">${item.Complaint_Date}</td>
+                            <td class="p-3">${item.Tenant_Name || 'N/A'}</td>
+                            <td class="p-3">${item.Property_Address || 'N/A'}</td>
+                            <td class="p-3"><span class="px-2 py-1 rounded text-xs ${item.Status === 'Resolved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${item.Status}</span></td>
+                            <td class="p-3">
+                                <button onclick="editItem('complaint', ${item.Complaint_ID})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                                <button onclick="deleteItem('complaints', ${item.Complaint_ID})" class="text-red-600 hover:text-red-800">Delete</button>
+                            </td>
+                        </tr>`;
+                }
+            }).join('');
+        }
+
+        function openModal(type, id = null) {
+            editingId = id;
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('modalForm');
+            
+            title.textContent = id ? `Edit ${type}` : `Add ${type}`;
+            form.innerHTML = getFormHTML(type, id);
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        function getFormHTML(type, id) {
+            const item = id ? allData[type + 's'].find(i => Object.values(i)[0] === id) : {};
+
+            switch(type) {
+                case 'property':
+                    return `
+                        <input type="text" name="Address" value="${item.Address || ''}" placeholder="Address" class="w-full p-2 border rounded" required>
+                        <input type="number" name="Size_Sqft" value="${item.Size_Sqft || ''}" placeholder="Size (sqft)" class="w-full p-2 border rounded" required>
+                        <input type="text" name="Property_Type" value="${item.Property_Type || ''}" placeholder="Property Type" class="w-full p-2 border rounded" required>
+                        <select name="Booking_Status" class="w-full p-2 border rounded" required>
+                            <option value="Available" ${item.Booking_Status === 'Available' ? 'selected' : ''}>Available</option>
+                            <option value="Rented" ${item.Booking_Status === 'Rented' ? 'selected' : ''}>Rented</option>
+                            <option value="Under Maintenance" ${item.Booking_Status === 'Under Maintenance' ? 'selected' : ''}>Under Maintenance</option>
+                        </select>
+                        <input type="number" step="0.01" name="Property_Cost" value="${item.Property_Cost || ''}" placeholder="Property Cost" class="w-full p-2 border rounded" required>
+                        <input type="text" name="City" value="${item.City || ''}" placeholder="City" class="w-full p-2 border rounded" required>
+                        <select name="Furnished" class="w-full p-2 border rounded" required>
+                            <option value="0" ${item.Furnished == 0 ? 'selected' : ''}>Unfurnished</option>
+                            <option value="1" ${item.Furnished == 1 ? 'selected' : ''}>Furnished</option>
+                        </select>
+                        <select name="Owner_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Owner</option>
+                            ${allData.owners.map(o => `<option value="${o.Owner_ID}" ${item.Owner_ID == o.Owner_ID ? 'selected' : ''}>${o.Name}</option>`).join('')}
+                        </select>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Property</button>
+                    `;
+                case 'tenant':
+                    return `
+                        <input type="text" name="Name" value="${item.Name || ''}" placeholder="Name" class="w-full p-2 border rounded" required>
+                        <input type="tel" name="Phone" value="${item.Phone || ''}" placeholder="Phone" class="w-full p-2 border rounded">
+                        <input type="email" name="Email" value="${item.Email || ''}" placeholder="Email" class="w-full p-2 border rounded">
+                        <input type="number" step="0.01" name="Income" value="${item.Income || ''}" placeholder="Income" class="w-full p-2 border rounded">
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Tenant</button>
+                    `;
+                case 'owner':
+                    return `
+                        <input type="text" name="Name" value="${item.Name || ''}" placeholder="Name" class="w-full p-2 border rounded" required>
+                        <input type="tel" name="Phone" value="${item.Phone || ''}" placeholder="Phone" class="w-full p-2 border rounded">
+                        <input type="email" name="Email" value="${item.Email || ''}" placeholder="Email" class="w-full p-2 border rounded">
+                        <input type="text" name="Bank_Account" value="${item.Bank_Account || ''}" placeholder="Bank Account" class="w-full p-2 border rounded">
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Owner</button>
+                    `;
+                case 'lease':
+                    return `
+                        <select name="Property_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Property</option>
+                            ${allData.properties.map(p => `<option value="${p.Property_ID}" ${item.Property_ID == p.Property_ID ? 'selected' : ''}>${p.Address}</option>`).join('')}
+                        </select>
+                        <select name="Tenant_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Tenant</option>
+                            ${allData.tenants.map(t => `<option value="${t.Tenant_ID}" ${item.Tenant_ID == t.Tenant_ID ? 'selected' : ''}>${t.Name}</option>`).join('')}
+                        </select>
+                        <input type="date" name="Start_Date" value="${item.Start_Date || ''}" placeholder="Start Date" class="w-full p-2 border rounded" required>
+                        <input type="date" name="End_Date" value="${item.End_Date || ''}" placeholder="End Date" class="w-full p-2 border rounded" required>
+                        <input type="number" step="0.01" name="Monthly_Rent" value="${item.Monthly_Rent || ''}" placeholder="Monthly Rent" class="w-full p-2 border rounded" required>
+                        <input type="number" step="0.01" name="Security_Deposit" value="${item.Security_Deposit || ''}" placeholder="Security Deposit" class="w-full p-2 border rounded" required>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Lease</button>
+                    `;
+                case 'payment':
+                    return `
+                        <select name="Lease_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Lease</option>
+                            ${allData.leases.map(l => `<option value="${l.Lease_ID}" ${item.Lease_ID == l.Lease_ID ? 'selected' : ''}>Lease #${l.Lease_ID} - ${l.Property_Address}</option>`).join('')}
+                        </select>
+                        <input type="date" name="Payment_Date" value="${item.Payment_Date || new Date().toISOString().split('T')[0]}" class="w-full p-2 border rounded" required>
+                        <input type="number" step="0.01" name="Amount" value="${item.Amount || ''}" placeholder="Amount" class="w-full p-2 border rounded" required>
+                        <select name="Mode_of_Payment" class="w-full p-2 border rounded" required>
+                            <option value="Cash" ${item.Mode_of_Payment === 'Cash' ? 'selected' : ''}>Cash</option>
+                            <option value="Check" ${item.Mode_of_Payment === 'Check' ? 'selected' : ''}>Check</option>
+                            <option value="Bank Transfer" ${item.Mode_of_Payment === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
+                            <option value="Credit Card" ${item.Mode_of_Payment === 'Credit Card' ? 'selected' : ''}>Credit Card</option>
+                        </select>
+                        <select name="Status" class="w-full p-2 border rounded" required>
+                            <option value="Pending" ${item.Status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Completed" ${item.Status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Failed" ${item.Status === 'Failed' ? 'selected' : ''}>Failed</option>
+                        </select>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Payment</button>
+                    `;
+                case 'maintenance':
+                    return `
+                        <select name="Property_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Property</option>
+                            ${allData.properties.map(p => `<option value="${p.Property_ID}" ${item.Property_ID == p.Property_ID ? 'selected' : ''}>${p.Address}</option>`).join('')}
+                        </select>
+                        <input type="date" name="Maintenance_Date" value="${item.Maintenance_Date || new Date().toISOString().split('T')[0]}" class="w-full p-2 border rounded" required>
+                        <input type="text" name="Maintenance_Type" value="${item.Maintenance_Type || ''}" placeholder="Maintenance Type" class="w-full p-2 border rounded" required>
+                        <input type="number" step="0.01" name="Cost" value="${item.Cost || ''}" placeholder="Cost" class="w-full p-2 border rounded" required>
+                        <select name="Status" class="w-full p-2 border rounded" required>
+                            <option value="Pending" ${item.Status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="In Progress" ${item.Status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Completed" ${item.Status === 'Completed' ? 'selected' : ''}>Completed</option>
+                        </select>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Maintenance</button>
+                    `;
+                case 'complaint':
+                    return `
+                        <select name="Tenant_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Tenant</option>
+                            ${allData.tenants.map(t => `<option value="${t.Tenant_ID}" ${item.Tenant_ID == t.Tenant_ID ? 'selected' : ''}>${t.Name}</option>`).join('')}
+                        </select>
+                        <select name="Property_ID" class="w-full p-2 border rounded" required>
+                            <option value="">Select Property</option>
+                            ${allData.properties.map(p => `<option value="${p.Property_ID}" ${item.Property_ID == p.Property_ID ? 'selected' : ''}>${p.Address}</option>`).join('')}
+                        </select>
+                        <input type="date" name="Complaint_Date" value="${item.Complaint_Date || new Date().toISOString().split('T')[0]}" class="w-full p-2 border rounded" required>
+                        <select name="Status" class="w-full p-2 border rounded" required>
+                            <option value="Under Review" ${item.Status === 'Under Review' ? 'selected' : ''}>Under Review</option>
+                            <option value="In Progress" ${item.Status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Resolved" ${item.Status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Complaint</button>
+                    `;
+            }
+        }
+
+        document.getElementById('modalForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            const typeMap = {
+                'property': 'properties',
+                'tenant': 'tenants',
+                'owner': 'owners',
+                'lease': 'leases',
+                'payment': 'payments',
+                'maintenance': 'maintenance',
+                'complaint': 'complaints'
+            };
+
+            const idMap = {
+                'properties': 'Property_ID',
+                'tenants': 'Tenant_ID',
+                'owners': 'Owner_ID',
+                'leases': 'Lease_ID',
+                'payments': 'Payment_ID',
+                'maintenance': 'Maintenance_ID',
+                'complaints': 'Complaint_ID'
+            };
+
+            const modalTitle = document.getElementById('modalTitle').textContent.toLowerCase();
+            const type = modalTitle.includes('property') ? 'property' : 
+                        modalTitle.includes('tenant') ? 'tenant' :
+                        modalTitle.includes('owner') ? 'owner' :
+                        modalTitle.includes('lease') ? 'lease' :
+                        modalTitle.includes('payment') ? 'payment' :
+                        modalTitle.includes('maintenance') ? 'maintenance' : 'complaint';
+            
+            const endpoint = typeMap[type];
+            
+            try {
+                const method = editingId ? 'PUT' : 'POST';
+                const url = editingId ? `${API_BASE}/${endpoint}/${editingId}` : `${API_BASE}/${endpoint}`;
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Operation failed');
+                }
+
+                showAlert(`${type} ${editingId ? 'updated' : 'created'} successfully!`, 'success');
+                closeModal();
+                await fetchData(endpoint);
+                await fetchDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        };
+
+        function editItem(type, id) {
+            openModal(type, id);
+        }
+
+        async function deleteItem(endpoint, id) {
+            if (!confirm('Are you sure you want to delete this item?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/${endpoint}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Delete failed');
+
+                showAlert('Item deleted successfully!', 'success');
+                await fetchData(endpoint);
+                await fetchDashboard();
+            } catch (error) {
+                showAlert('Failed to delete item', 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `mb-4 p-4 rounded ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            alert.textContent = message;
+            alert.classList.remove('hidden');
+            
+            setTimeout(() => {
+                alert.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

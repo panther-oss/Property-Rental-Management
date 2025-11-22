@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Property Rental Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">📊 Reports & Analytics</h1>
+            <a href="/" class="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">← Back to Main</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <div id="alert" class="hidden mb-4 p-4 rounded"></div>
+
+        <!-- Stored Procedures Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-blue-600">📑 Stored Procedures</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Property Revenue Report -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Property Revenue Report</h3>
+                    <div class="space-y-2">
+                        <select id="propertyRevenueSelect" class="w-full p-2 border rounded">
+                            <option value="">Select Property</option>
+                        </select>
+                        <button onclick="getPropertyRevenue()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Generate Report
+                        </button>
+                    </div>
+                    <div id="propertyRevenueResult" class="mt-4 text-sm"></div>
+                </div>
+
+                <!-- Tenant Payment History -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Tenant Payment History</h3>
+                    <div class="space-y-2">
+                        <select id="tenantHistorySelect" class="w-full p-2 border rounded">
+                            <option value="">Select Tenant</option>
+                        </select>
+                        <button onclick="getTenantPaymentHistory()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            View History
+                        </button>
+                    </div>
+                    <div id="tenantHistoryResult" class="mt-4 text-sm overflow-auto max-h-64"></div>
+                </div>
+
+                <!-- Monthly Rent Report -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Monthly Rent Report</h3>
+                    <div class="space-y-2">
+                        <select id="monthSelect" class="w-full p-2 border rounded">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11" selected>November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <input type="number" id="yearInput" value="2025" class="w-full p-2 border rounded" placeholder="Year">
+                        <button onclick="getMonthlyRentReport()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Generate Report
+                        </button>
+                    </div>
+                    <div id="monthlyRentResult" class="mt-4 text-sm overflow-auto max-h-64"></div>
+                </div>
+
+                <!-- Maintenance Cost Report -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Maintenance Cost Report</h3>
+                    <div class="space-y-2">
+                        <select id="propertyMaintenanceSelect" class="w-full p-2 border rounded">
+                            <option value="">Select Property</option>
+                        </select>
+                        <input type="date" id="startDate" class="w-full p-2 border rounded" value="2025-01-01">
+                        <input type="date" id="endDate" class="w-full p-2 border rounded" value="2025-12-31">
+                        <button onclick="getMaintenanceCost()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Generate Report
+                        </button>
+                    </div>
+                    <div id="maintenanceCostResult" class="mt-4 text-sm"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Functions Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-green-600">⚙️ Database Functions</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Calculate Total Rent -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Calculate Total Rent</h3>
+                    <div class="space-y-2">
+                        <select id="leaseRentSelect" class="w-full p-2 border rounded">
+                            <option value="">Select Lease</option>
+                        </select>
+                        <button onclick="calculateTotalRent()" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Calculate
+                        </button>
+                    </div>
+                    <div id="totalRentResult" class="mt-4 text-sm font-bold"></div>
+                </div>
+
+                <!-- Check Pending Payments -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Check Pending Payments</h3>
+                    <div class="space-y-2">
+                        <select id="tenantPendingSelect" class="w-full p-2 border rounded">
+                            <option value="">Select Tenant</option>
+                        </select>
+                        <button onclick="checkPendingPayments()" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Check Status
+                        </button>
+                    </div>
+                    <div id="pendingPaymentsResult" class="mt-4 text-sm font-bold"></div>
+                </div>
+
+                <!-- Occupancy Rate -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Property Occupancy Rate</h3>
+                    <div class="space-y-2">
+                        <select id="ownerOccupancySelect" class="w-full p-2 border rounded">
+                            <option value="">Select Owner</option>
+                        </select>
+                        <button onclick="getOccupancyRate()" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Calculate Rate
+                        </button>
+                    </div>
+                    <div id="occupancyRateResult" class="mt-4 text-sm font-bold"></div>
+                </div>
+
+                <!-- Outstanding Balance -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Outstanding Balance</h3>
+                    <div class="space-y-2">
+                        <select id="tenantBalanceSelect" class="w-full p-2 border rounded">
+                            <option value="">Select Tenant</option>
+                        </select>
+                        <button onclick="getOutstandingBalance()" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Check Balance
+                        </button>
+                    </div>
+                    <div id="outstandingBalanceResult" class="mt-4 text-sm font-bold"></div>
+                </div>
+
+                <!-- Average Maintenance Cost -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Avg Maintenance Cost</h3>
+                    <div class="space-y-2">
+                        <input type="text" id="propertyTypeInput" placeholder="Property Type" class="w-full p-2 border rounded">
+                        <button onclick="getAvgMaintenanceCost()" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Calculate Average
+                        </button>
+                    </div>
+                    <div id="avgMaintenanceResult" class="mt-4 text-sm font-bold"></div>
+                </div>
+
+                <!-- Property Availability -->
+                <div class="border rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Check Property Availability</h3>
+                    <div class="space-y-2">
+                        <select id="propertyAvailableSelect" class="w-full p-2 border rounded">
+                            <option value="">Select Property</option>
+                        </select>
+                        <button onclick="checkPropertyAvailability()" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Check Status
+                        </button>
+                    </div>
+                    <div id="propertyAvailableResult" class="mt-4 text-sm font-bold"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complaint Status Update -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4 text-purple-600">🔄 Update Complaint Status (Procedure)</h2>
+            <div class="max-w-2xl">
+                <div class="space-y-4">
+                    <select id="complaintSelect" class="w-full p-2 border rounded">
+                        <option value="">Select Complaint</option>
+                    </select>
+                    <select id="complaintStatusSelect" class="w-full p-2 border rounded">
+                        <option value="Under Review">Under Review</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                    <input type="text" id="actionInput" placeholder="Action Description" class="w-full p-2 border rounded">
+                    <button onclick="updateComplaintStatus()" class="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        Update Status
+                    </button>
+                </div>
+                <div id="complaintUpdateResult" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProperties();
+            loadTenants();
+            loadOwners();
+            loadLeases();
+            loadComplaints();
+        });
+
+        async function loadProperties() {
+            const response = await fetch(`${API_BASE}/properties`);
+            const properties = await response.json();
+            
+            ['propertyRevenueSelect', 'propertyMaintenanceSelect', 'propertyAvailableSelect'].forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">Select Property</option>' +
+                    properties.map(p => `<option value="${p.Property_ID}">${p.Address}</option>`).join('');
+            });
+        }
+
+        async function loadTenants() {
+            const response = await fetch(`${API_BASE}/tenants`);
+            const tenants = await response.json();
+            
+            ['tenantHistorySelect', 'tenantPendingSelect', 'tenantBalanceSelect'].forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">Select Tenant</option>' +
+                    tenants.map(t => `<option value="${t.Tenant_ID}">${t.Name}</option>`).join('');
+            });
+        }
+
+        async function loadOwners() {
+            const response = await fetch(`${API_BASE}/owners`);
+            const owners = await response.json();
+            
+            const select = document.getElementById('ownerOccupancySelect');
+            select.innerHTML = '<option value="">Select Owner</option>' +
+                owners.map(o => `<option value="${o.Owner_ID}">${o.Name}</option>`).join('');
+        }
+
+        async function loadLeases() {
+            const response = await fetch(`${API_BASE}/leases`);
+            const leases = await response.json();
+            
+            const select = document.getElementById('leaseRentSelect');
+            select.innerHTML = '<option value="">Select Lease</option>' +
+                leases.map(l => `<option value="${l.Lease_ID}">Lease #${l.Lease_ID} - ${l.Property_Address || 'N/A'}</option>`).join('');
+        }
+
+        async function loadComplaints() {
+            const response = await fetch(`${API_BASE}/complaints`);
+            const complaints = await response.json();
+            
+            const select = document.getElementById('complaintSelect');
+            select.innerHTML = '<option value="">Select Complaint</option>' +
+                complaints.map(c => `<option value="${c.Complaint_ID}">Complaint #${c.Complaint_ID} - ${c.Tenant_Name || 'N/A'}</option>`).join('');
+        }
+
+        // Stored Procedure Functions
+        async function getPropertyRevenue() {
+            const propertyId = document.getElementById('propertyRevenueSelect').value;
+            if (!propertyId) return alert('Please select a property');
+
+            const response = await fetch(`${API_BASE}/reports/property-revenue/${propertyId}`);
+            const data = await response.json();
+            
+            document.getElementById('propertyRevenueResult').innerHTML = `
+                <div class="bg-gray-50 p-3 rounded">
+                    <p><strong>Address:</strong> ${data.Address || 'N/A'}</p>
+                    <p><strong>Type:</strong> ${data.Property_Type || 'N/A'}</p>
+                    <p><strong>Owner:</strong> ${data.Owner_Name || 'N/A'}</p>
+                    <p><strong>Total Leases:</strong> ${data.Total_Leases || 0}</p>
+                    <p><strong>Total Revenue:</strong> $${(data.Total_Revenue || 0).toFixed(2)}</p>
+                    <p><strong>Average Rent:</strong> $${(data.Average_Rent || 0).toFixed(2)}</p>
+                    <p><strong>Last Payment:</strong> ${data.Last_Payment_Date || 'N/A'}</p>
+                </div>
+            `;
+        }
+
+        async function getTenantPaymentHistory() {
+            const tenantId = document.getElementById('tenantHistorySelect').value;
+            if (!tenantId) return alert('Please select a tenant');
+
+            const response = await fetch(`${API_BASE}/reports/tenant-payment-history/${tenantId}`);
+            const data = await response.json();
+            
+            document.getElementById('tenantHistoryResult').innerHTML = data.length ? `
+                <table class="w-full text-xs">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2">Date</th>
+                            <th class="p-2">Property</th>
+                            <th class="p-2">Amount</th>
+                            <th class="p-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(p => `
+                            <tr class="border-b">
+                                <td class="p-2">${p.Payment_Date || 'N/A'}</td>
+                                <td class="p-2">${p.Property_Address || 'N/A'}</td>
+                                <td class="p-2">$${p.Amount || 0}</td>
+                                <td class="p-2">${p.Status || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<p class="text-gray-500">No payment history found</p>';
+        }
+
+        async function getMonthlyRentReport() {
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearInput').value;
+
+            const response = await fetch(`${API_BASE}/reports/monthly-rent/${month}/${year}`);
+            const data = await response.json();
+            
+            document.getElementById('monthlyRentResult').innerHTML = data.length ? `
+                <table class="w-full text-xs">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2">Property</th>
+                            <th class="p-2">Tenant</th>
+                            <th class="p-2">Expected</th>
+                            <th class="p-2">Received</th>
+                            <th class="p-2">Balance</th>
+                            <th class="p-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(r => `
+                            <tr class="border-b">
+                                <td class="p-2">${r.Address}</td>
+                                <td class="p-2">${r.Tenant_Name}</td>
+                                <td class="p-2">$${r.Expected_Amount}</td>
+                                <td class="p-2">$${r.Received_Amount}</td>
+                                <td class="p-2">$${r.Balance}</td>
+                                <td class="p-2"><span class="px-2 py-1 rounded text-xs ${r.Payment_Status === 'Paid' ? 'bg-green-100' : 'bg-yellow-100'}">${r.Payment_Status}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<p class="text-gray-500">No data for this period</p>';
+        }
+
+        async function getMaintenanceCost() {
+            const propertyId = document.getElementById('propertyMaintenanceSelect').value;
+            if (!propertyId) return alert('Please select a property');
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            const response = await fetch(`${API_BASE}/reports/maintenance-cost/${propertyId}?start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+            
+            document.getElementById('maintenanceCostResult').innerHTML = `
+                <div class="bg-gray-50 p-3 rounded">
+                    <p><strong>Property:</strong> ${data.Address || 'N/A'}</p>
+                    <p><strong>Total Records:</strong> ${data.Total_Maintenance_Records || 0}</p>
+                    <p><strong>Total Cost:</strong> $${(data.Total_Cost || 0).toFixed(2)}</p>
+                    <p><strong>Average Cost:</strong> $${(data.Average_Cost || 0).toFixed(2)}</p>
+                    <p><strong>Pending:</strong> ${data.Pending_Count || 0}</p>
+                    <p><strong>In Progress:</strong> ${data.InProgress_Count || 0}</p>
+                    <p><strong>Completed:</strong> ${data.Completed_Count || 0}</p>
+                </div>
+            `;
+        }
+
+        async function updateComplaintStatus() {
+            const complaintId = document.getElementById('complaintSelect').value;
+            if (!complaintId) return alert('Please select a complaint');
+
+            const status = document.getElementById('complaintStatusSelect').value;
+            const action = document.getElementById('actionInput').value || `Status updated to ${status}`;
+
+            const response = await fetch(`${API_BASE}/complaints/${complaintId}/update-status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, action })
+            });
+            
+            const data = await response.json();
+            
+            document.getElementById('complaintUpdateResult').innerHTML = `
+                <div class="bg-green-50 p-3 rounded mt-2">
+                    <p class="text-green-800">✅ Complaint updated successfully!</p>
+                    <p><strong>Status:</strong> ${data.Status}</p>
+                    <p><strong>Date:</strong> ${data.Complaint_Date}</p>
+                </div>
+            `;
+        }
+
+        // Function calls
+        async function calculateTotalRent() {
+            const leaseId = document.getElementById('leaseRentSelect').value;
+            if (!leaseId) return alert('Please select a lease');
+
+            const response = await fetch(`${API_BASE}/functions/total-rent/${leaseId}`);
+            const data = await response.json();
+            
+            document.getElementById('totalRentResult').innerHTML = `
+                <div class="bg-blue-50 p-3 rounded text-blue-800">
+                    Total Rent for Lease Period: <span class="text-xl">$${(data.total_rent || 0).toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        async function checkPendingPayments() {
+            const tenantId = document.getElementById('tenantPendingSelect').value;
+            if (!tenantId) return alert('Please select a tenant');
+
+            const response = await fetch(`${API_BASE}/functions/pending-payments/${tenantId}`);
+            const data = await response.json();
+            
+            const hasPending = data.has_pending === 1;
+            document.getElementById('pendingPaymentsResult').innerHTML = `
+                <div class="p-3 rounded ${hasPending ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}">
+                    ${hasPending ? '⚠️ Has Pending Payments' : '✅ No Pending Payments'}
+                </div>
+            `;
+        }
+
+        async function getOccupancyRate() {
+            const ownerId = document.getElementById('ownerOccupancySelect').value;
+            if (!ownerId) return alert('Please select an owner');
+
+            const response = await fetch(`${API_BASE}/functions/occupancy-rate/${ownerId}`);
+            const data = await response.json();
+            
+            document.getElementById('occupancyRateResult').innerHTML = `
+                <div class="bg-blue-50 p-3 rounded text-blue-800">
+                    Occupancy Rate: <span class="text-2xl">${(data.occupancy_rate || 0).toFixed(2)}%</span>
+                </div>
+            `;
+        }
+
+        async function getOutstandingBalance() {
+            const tenantId = document.getElementById('tenantBalanceSelect').value;
+            if (!tenantId) return alert('Please select a tenant');
+
+            const response = await fetch(`${API_BASE}/functions/outstanding-balance/${tenantId}`);
+            const data = await response.json();
+            
+            document.getElementById('outstandingBalanceResult').innerHTML = `
+                <div class="bg-yellow-50 p-3 rounded text-yellow-800">
+                    Outstanding Balance: <span class="text-xl">$${(data.outstanding_balance || 0).toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        async function getAvgMaintenanceCost() {
+            const propertyType = document.getElementById('propertyTypeInput').value;
+            if (!propertyType) return alert('Please enter a property type');
+
+            const response = await fetch(`${API_BASE}/functions/avg-maintenance-cost/${propertyType}`);
+            const data = await response.json();
+            
+            document.getElementById('avgMaintenanceResult').innerHTML = `
+                <div class="bg-blue-50 p-3 rounded text-blue-800">
+                    Average Cost for ${propertyType}: <span class="text-xl">$${(data.avg_cost || 0).toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        async function checkPropertyAvailability() {
+            const propertyId = document.getElementById('propertyAvailableSelect').value;
+            if (!propertyId) return alert('Please select a property');
+
+            const response = await fetch(`${API_BASE}/functions/property-available/${propertyId}`);
+            const data = await response.json();
+            
+            const isAvailable = data.is_available === 1;
+            document.getElementById('propertyAvailableResult').innerHTML = `
+                <div class="p-3 rounded ${isAvailable ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}">
+                    ${isAvailable ? '✅ Available' : '❌ Not Available'}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
